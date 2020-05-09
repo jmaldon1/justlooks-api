@@ -6,10 +6,8 @@ from api.constants import ROUTE_PATH
 # from app.api import utils
 from api.routes import justlooks_api  # Import Blueprint
 from api.routes import *  # Import all routes
-# from app.api.scheduled_tasks import delete_old_files
 
-# cd xml-parsing-api/app
-# Run script: python -m app.main
+# Run script: python app/main.py
 # Run: FLASK_APP=app/main.py FLASK_DEBUG=1 flask run --host=0.0.0.0 --port=5000
 
 app = Flask(__name__)
