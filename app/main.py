@@ -12,6 +12,7 @@ from api.routes import *  # Import all routes
 
 app = Flask(__name__)
 
+# app.config variables can be used anywhere that app is available
 app.config['ROUTE_PATH'] = ROUTE_PATH
 
 app.config.update(
