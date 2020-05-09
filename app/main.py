@@ -2,10 +2,10 @@
 from flask import Flask, jsonify, make_response
 import sys
 
-# from app.api.constants import CSV_FOLDER, UPLOAD_FOLDER, JSON_FOLDER, ROUTE_PATH, NETRC_PATH
+from api.constants import ROUTE_PATH
 # from app.api import utils
-# from app.api.routes import xml_parsing_api  # Import Blueprint
-# from app.api.routes import *  # Import all routes
+from api.routes import justlooks_api  # Import Blueprint
+from api.routes import *  # Import all routes
 # from app.api.scheduled_tasks import delete_old_files
 
 # cd xml-parsing-api/app
@@ -14,6 +14,8 @@ import sys
 
 app = Flask(__name__)
 
+app.config['ROUTE_PATH'] = ROUTE_PATH
+
 app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
@@ -21,8 +23,7 @@ app.config.update(
 )
 app.secret_key = 'justlooks'
 
-# app.register_blueprint(xml_parsing_api, url_prefix=f"{app.config['ROUTE_PATH']}")
-
+app.register_blueprint(justlooks_api, url_prefix=f"{app.config['ROUTE_PATH']}")
 
 @app.errorhandler(404)
 def handle_404(error):
@@ -39,5 +40,4 @@ if __name__ == '__main__':
             host = '0.0.0.0'
     except IndexError:
         pass
-    app.run(debug=True, host="0.0.0.0", port=5000)
-    scheduler.shutdown()
+    app.run(debug=True, host=host, port=5000)
