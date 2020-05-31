@@ -17,7 +17,7 @@ def product():
 
 def get_product(product_id: str) -> dict:
     conn_string = utils.get_conn_string(constants.DB_CREDS, dbtype="postgres", delim=" ")
-    
+
     with pg.connect(conn_string) as conn, conn.cursor() as cur:
         conn.autocommit = True
         sql = """
@@ -30,4 +30,5 @@ def get_product(product_id: str) -> dict:
         row = cur.fetchone()
         if row:
             return row[1]
+
     return {"Error": "No product found."}

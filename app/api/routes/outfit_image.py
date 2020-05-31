@@ -44,7 +44,7 @@ def get_outfit_image(outfit_id: str):
     s3_objects = outfits_bucket.objects.filter(Prefix=bucket_filter)
 
     max_images = 0
-    for res in get_source_sql_data(outfits_sql, (outfit_id,)):
+    for res in utils.get_source_sql_data(outfits_sql, (outfit_id,)):
         outfit = res['outfit']
         max_images = outfit['max_images']
 
@@ -64,7 +64,7 @@ def get_outfit_image(outfit_id: str):
 
         # full_url = urllib.parse.urljoin(cloudfront_url, obj.key)
         # image_urls.append(full_url)
-   
+
     #     if re.match(r'(.*)-([0-9]+|\bthumbnail\b)\.(.*)', obj.key):
     #         full_url = urllib.parse.urljoin(cloudfront_url, obj.key)
     #         image_urls.append(full_url)

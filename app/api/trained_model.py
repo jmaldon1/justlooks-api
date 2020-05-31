@@ -2,9 +2,10 @@ import pickle
 import psycopg2 as pg
 import toolz
 
-from api import utils, constants
+from api import constants
 
-def get_trained_model():
+
+def get_trained_model() -> dict:
     sql = """
         SELECT * FROM public.trained_recommendation_models
         WHERE model_version = 0.1
@@ -15,6 +16,8 @@ def get_trained_model():
         cur.execute(sql)
         columns = [column[0] for column in cur.description]
         row = cur.fetchone()
+        if row is None:
+            return {}
         d_row = dict(zip(columns, row))
 
     # Convert specified fields to bytes
@@ -24,15 +27,13 @@ def get_trained_model():
                                     (toolz.update_in, ['item_features_pickle'], bytes))
 
     # Unpickle specified fields
-    data = toolz.thread_first(data_bytes,
-                             (toolz.update_in, ['model_pickle'], pickle.loads),
-                             (toolz.update_in, ['user_features_pickle'], pickle.loads),
-                             (toolz.update_in, ['item_features_pickle'], pickle.loads))
+    model_data = toolz.thread_first(data_bytes,
+                                    (toolz.update_in, ['model_pickle'], pickle.loads),
+                                    (toolz.update_in, ['user_features_pickle'], pickle.loads),
+                                    (toolz.update_in, ['item_features_pickle'], pickle.loads))
 
     # Return model data without specified fields
-    return toolz.dissoc(data,
-                        'model_version',
-                        'created_date',
-                        'modified_date')
+    return model_data
+
 
 model_info = get_trained_model()

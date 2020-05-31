@@ -1,6 +1,7 @@
 from api.routes import justlooks_api
 from api import trained_model
 
+
 @justlooks_api.route("/n_recommended_outfits", methods=['GET'])
 def n_recommended_outfits():
     # print(trained_model.get_trained_model())
