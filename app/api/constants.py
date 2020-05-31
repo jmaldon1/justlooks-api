@@ -8,3 +8,4 @@ DB_CREDS = {
     "dbname": "postgres",
     "user": "joshbrian"
 }
+ARRAY_SIZE=100

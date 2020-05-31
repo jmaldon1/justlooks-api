@@ -1,4 +1,6 @@
 import os
+import psycopg2 as pg
+from api import constants
 
 
 def get_abs_path(path: str) -> str:
@@ -45,3 +47,22 @@ def get_conn_string(secure, dbtype="msql", delim=";"):
         cs.append(f"Pwd={Pwd}")
 
     return delim.join(cs)
+
+
+def get_source_sql_data(source_sql, vals = []):
+    """with given sql cursor yield an iterator for each row. """
+    arraysize = constants.ARRAY_SIZE
+    conn_string = get_conn_string(constants.DB_CREDS, dbtype="postgres", delim=" ")
+    with pg.connect(conn_string) as conn,\
+            conn.cursor() as cur:
+        cur.execute(source_sql, vals)
+        # get column names; only do this once
+        columns = [column[0] for column in cur.description]
+        while True:
+            results = cur.fetchmany(arraysize)
+            if not results:
+                break
+            else:
+                for row in results:
+                    d_row = dict(zip(columns, row))
+                    yield d_row
