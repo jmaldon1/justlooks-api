@@ -22,6 +22,22 @@ def read_file(path: str) -> str:
         return file.read()
 
 
+def __try_number(maybe_number):
+    """The idea here is translate our INI input into something more strict,
+    first try for a float, int, then concede with a string. """
+    if isinstance(maybe_number, (dict, int, float)):
+        return maybe_number
+    else:
+        try:
+            fl = float(maybe_number)
+            if fl.is_integer():
+                return int(fl)
+            else:
+                return fl
+        except ValueError:
+            return maybe_number
+
+
 def get_conn_string(secure, dbtype="msql", delim=";"):
     """get a connection string for database connection functions.
     Should probably default to pulling from environment variables or a config

@@ -22,15 +22,18 @@ def get_trained_model() -> dict:
 
     # Convert specified fields to bytes
     data_bytes = toolz.thread_first(d_row,
+                                    (toolz.update_in, ['model_version'], float),
                                     (toolz.update_in, ['model_pickle'], bytes),
                                     (toolz.update_in, ['user_features_pickle'], bytes),
-                                    (toolz.update_in, ['item_features_pickle'], bytes))
+                                    (toolz.update_in, ['item_features_pickle'], bytes),
+                                    (toolz.update_in, ['dataset_pickle'], bytes),)
 
     # Unpickle specified fields
     model_data = toolz.thread_first(data_bytes,
                                     (toolz.update_in, ['model_pickle'], pickle.loads),
                                     (toolz.update_in, ['user_features_pickle'], pickle.loads),
-                                    (toolz.update_in, ['item_features_pickle'], pickle.loads))
+                                    (toolz.update_in, ['item_features_pickle'], pickle.loads),
+                                    (toolz.update_in, ['dataset_pickle'], pickle.loads),)
 
     # Return model data without specified fields
     return model_data

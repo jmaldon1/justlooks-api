@@ -9,6 +9,7 @@ idna==2.9
 itsdangerous==1.1.0
 Jinja2==2.11.2
 jmespath==0.10.0
+joblib==0.15.1
 lightfm==1.15
 MarkupSafe==1.1.1
 numpy==1.18.4
@@ -17,8 +18,11 @@ psycopg2-binary==2.8.5
 python-dateutil==2.8.1
 requests==2.23.0
 s3transfer==0.3.3
+scikit-learn==0.23.1
 scipy==1.4.1
 six==1.14.0
+sklearn==0.0
+threadpoolctl==2.1.0
 toolz==0.10.0
 urllib3==1.25.9
 Werkzeug==1.0.1
