@@ -1,23 +1,11 @@
 #!flask/bin/python
-from flask import Flask, jsonify, make_response
 import sys
-from services.base_service.base_service import base_service_api
-
-app = Flask(__name__)
-
-app.register_blueprint(base_service_api)
-
-@app.errorhandler(404)
-def handle_404(error):
-    """
-    This is returned if an undefined route is called
-    """
-    return make_response(jsonify({'error': 'Not found'}), 404)
-
-@app.route("/", methods=["GET"])
-def index():
-    return "Hello world from service A"
-
+import os
+from flask import Flask, jsonify, make_response, Blueprint
+from services.base_service.base_service import create_base_service_app_from_config
+from domain.shared.config_reader import read_config
+from services.serviceA.routes import serviceA_api
+from services.serviceA.routes import *
 
 if __name__ == '__main__':
     host = 'localhost'
@@ -26,4 +14,17 @@ if __name__ == '__main__':
             host = '0.0.0.0'
     except IndexError:
         pass
-    app.run(debug=True, host=host, port=4000)
+
+    if len(sys.argv) > 1:
+        config_name = sys.argv[1]
+    else:
+        config_name = "default"
+
+    if not config_name.endswith(".yaml"):
+        config_name += ".yaml"
+
+    config = read_config(os.path.join(os.path.dirname(__file__), "configs", config_name))
+
+    app = create_base_service_app_from_config(config)
+    app.register_blueprint(serviceA_api)
+    app.run(debug=True, host=host, port=config["service"]["port"])

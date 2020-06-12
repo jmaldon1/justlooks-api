@@ -6,8 +6,9 @@ idna==2.9
 itsdangerous==1.1.0
 Jinja2==2.11.2
 MarkupSafe==1.1.1
--e git+https://github.com/jmaldon1/justlooks-api.git@a45f87164dbba8aa44f9c6300ccbfa1c82cd6b21#egg=myproject&subdirectory=../../../features/microservice
+-e git+https://github.com/jmaldon1/justlooks-api.git@e3a638ae32cc1198ce56cc972780a3698f986b1d#egg=myproject&subdirectory=../../../features/microservice
 psycopg2-binary==2.8.5
+PyYAML==5.3.1
 requests==2.23.0
 urllib3==1.25.9
 Werkzeug==1.0.1

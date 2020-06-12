@@ -1,0 +1,6 @@
+service:
+    name: "service_registry"
+    port: 4000
+flask:
+    DEBUG: False
+    TESTING: False

@@ -1,0 +1,3 @@
+service:
+    name: "serviceA"
+    port: 20000

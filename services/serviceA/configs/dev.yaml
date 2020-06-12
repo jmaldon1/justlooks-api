@@ -1,0 +1,7 @@
+service:
+    name: "serviceA"
+    port: 20000
+flask:
+    ENV: 'development'
+    DEBUG: True
+    TESTING: False

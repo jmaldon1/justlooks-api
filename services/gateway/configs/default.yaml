@@ -1,0 +1,6 @@
+service:
+    name: "gateway"
+    port: 5000
+flask:
+    DEBUG: False
+    TESTING: False

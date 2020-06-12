@@ -1,0 +1,7 @@
+service:
+    name: "gateway"
+    port: 5000
+flask:
+    ENV: 'development'
+    DEBUG: True
+    TESTING: True

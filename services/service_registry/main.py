@@ -4,8 +4,8 @@ import os
 from flask import Flask, jsonify, make_response, Blueprint
 from domain.shared.config_reader import read_config
 from services.base_service.base_service import create_base_service_app_from_config
-from services.gateway.routes import gateway_api
-from services.gateway.routes import *
+# from services.gateway.routes import gateway_api
+# from services.gateway.routes import *
 
 
 if __name__ == '__main__':
@@ -26,6 +26,6 @@ if __name__ == '__main__':
 
     config = read_config(os.path.join(os.path.dirname(__file__), "configs", config_name))
 
-    app = create_base_service_app_from_config(config)
-    app.register_blueprint(gateway_api)
+    app = create_base_service_app(config["service"]["name"])
+    # app.register_blueprint(gateway_api)
     app.run(debug=True, host=host, port=config["service"]["port"])
