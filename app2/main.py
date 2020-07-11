@@ -2,6 +2,7 @@
 from flask import Flask, jsonify, make_response
 import sys
 
+from api.utils import reformat_error_message
 from api.constants import ROUTE_PATH
 # from app.api import utils
 from api.routes import justlooks_api  # Import Blueprint
@@ -32,6 +33,23 @@ def handle_404(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
+# Return validation errors as JSON
+@app.errorhandler(422)
+@app.errorhandler(400)
+def handle_error(err):
+    headers = err.data.get("headers", None)
+    messages = err.data.get("messages", ["Invalid request."])
+    reformat_error_message(messages)
+    if headers:
+        return jsonify({"errors": messages}), err.code, headers
+    else:
+        return jsonify({"errors": messages}), err.code
+
+# Best practices: https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api#errors
+
+"""How to run:
+    python app/main.py  
+"""
 if __name__ == '__main__':
     host = 'localhost'
     try:

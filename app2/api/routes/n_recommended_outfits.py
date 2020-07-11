@@ -5,7 +5,7 @@ import itertools
 from flask import request, jsonify
 
 from api.routes import justlooks_api
-from api import trained_model, utils, constants
+# from api import trained_model, utils, constants
 
 
 @justlooks_api.route("/n_recommended_outfits", methods=['GET'])
