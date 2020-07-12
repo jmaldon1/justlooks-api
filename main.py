@@ -23,7 +23,7 @@ def main():
         raise KeyError(f"Can't find environment variable {e}.")
 
     config = config_file.config
-    # secrets = secrets_file.secrets
+    secrets = secrets_file.secrets
 
     host = config['host']
     port = config['port']

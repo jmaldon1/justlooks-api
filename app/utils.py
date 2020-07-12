@@ -18,11 +18,13 @@ def is_filter_allowed(filter: str) -> bool:
     }
 
 
-def remove_single_length_lists(val: list) -> Any:
+def replace_single_len_lists(request_params: dict) -> dict:
+    """Replace any single length lists with the only item in the list
+
+    Args:
+        request_params (dict): request params
+
+    Returns:
+        dict: request params with single length lists replaced
     """
-    Check if the list has a length of 1
-    and if it does, return that value from the list
-    """
-    if len(val) == 1:
-        return val[0]
-    return val
+    return {key: val[0] if len(val) == 1 else val for key, val in request_params.items()}

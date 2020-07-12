@@ -8,3 +8,4 @@ api_bp = Blueprint('api', __name__)
 # https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis
 # pylint: disable=wrong-import-position
 from app.api.routes import proxy
+from app.api import error_handlers
