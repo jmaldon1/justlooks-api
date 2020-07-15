@@ -1,5 +1,7 @@
+"""Utility functions used throughout the project
+"""
 import os
-from typing import Any
+
 
 def read_file(path: str) -> str:
     """
@@ -10,12 +12,12 @@ def read_file(path: str) -> str:
         return file.read()
 
 
-def is_filter_allowed(filter: str) -> bool:
-    # Allowed filter values take the form of `table_column_operator`
-    # `*` means all
-    allowed_filters = {
-        "products_*_eq"
-    }
+# def is_filter_allowed(filter: str) -> bool:
+#     # Allowed filter values take the form of `table_column_operator`
+#     # `*` means all
+#     allowed_filters = {
+#         "products_*_eq"
+#     }
 
 
 def replace_single_len_lists(request_params: dict) -> dict:
