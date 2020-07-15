@@ -1,6 +1,6 @@
 """Utility functions that are used in API requests
 """
-from urllib.parse import urlencode, urlunparse, urlparse
+from urllib.parse import urlencode, urlunparse, urlparse, urljoin
 import re
 import toolz
 import requests
@@ -38,15 +38,15 @@ def add_default_sorting(request_params: dict, default_sort: str = "int_id") -> d
     return {**request_params, "order": default_sort}
 
 
-def add_pivot_value(request_params: dict, url: str) -> dict:
+def create_pivot_value_request_param(request_params: dict, postgrest_host: str) -> dict:
     """Find the pivot value for a seek pagination.
     This should only happen if the user is sorting by anything other than `int_id`,
     and wants to get data after a certain `int_id`.
-    NOTE: This function performs an O(1) SELECT with PostgREST to find the pivot value
+    NOTE: This function performs an O(1) SELECT to find the pivot value.
 
     Args:
         request_params (dict): Original request params
-        url (str): URL to PostgREST
+        postgrest_host (str): URL to PostgREST
 
     Returns:
         dict: Request params with pivot value added
@@ -66,27 +66,18 @@ def add_pivot_value(request_params: dict, url: str) -> dict:
             logger.debug("Could not get int_id.")
             return request_params
 
-        pivot_request_params = {
-            "int_id": f"eq.{int_id}",
-            "select": sort_col
+        pivot_value_payload = {
+            "int_id": int_id,
+            "col": sort_col
         }
-
-        resp = requests.get(url,
-                            params=pivot_request_params,
-                            # This header makes PostgREST return the first result
-                            # as an object unenclosed by an array.
-                            headers={"Accept": "application/vnd.pgrst.object+json"})
+        resp = requests.post(urljoin(postgrest_host, "rpc/pivot_value"),
+                             data=pivot_value_payload)
 
         if resp.status_code >= 300:
-            if resp.status_code == 406:
-                raise PostgrestHTTPException(resp, hint="The 'int_id' probably does not exist.")
-
             raise PostgrestHTTPException(resp)
 
-        results = resp.json()
-        if results:
-            pivot_value = results[sort_col]
-
+        pivot_value = resp.json()
+        if pivot_value:
             return {**request_params, sort_col: f"gte.{pivot_value}"}
 
     return request_params
@@ -161,9 +152,12 @@ def create_link_header(resp: requests.Response, request_params: dict,
         #   1. If results has data
         #   2. If the Content-Range is equal to the limit in the query
         #       ex. Content-Range=0-9/* and limit=10
-        last_id = results[-1]["int_id"]
-        next_link = create_next_link_header(last_id, request_params)
-        link_header.append(next_link)
+        last_item = results[-1]
+        last_id = last_item.get("int_id", None)
+        if last_id:
+            last_id = results[-1]["int_id"]
+            next_link = create_next_link_header(last_id, request_params)
+            link_header.append(next_link)
 
     if link_header:
         " ".join(link_header)
