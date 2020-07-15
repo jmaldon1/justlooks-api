@@ -7,6 +7,7 @@ from flask import Response, abort
 from werkzeug.exceptions import HTTPException
 
 from app.api import api_bp, api_utils
+from app.logger import logger
 
 
 class PostgrestHTTPException(Exception):
@@ -15,9 +16,10 @@ class PostgrestHTTPException(Exception):
     response back to the client.
     """
 
-    def __init__(self, response: requests.Response,
-                 hint: str = None, details: str = None, message: str = None):
+    def __init__(self, response: requests.Response, hint: str = None,
+                 details: str = None, message: str = None):
         Exception.__init__(self)
+        logger.error(f"[PostgREST] Error {response.status_code} - {response.url}")
         self.response = response
         self.hint = hint
         self.details = details
@@ -90,6 +92,15 @@ class PostgrestHTTPException(Exception):
 
 @api_bp.errorhandler(PostgrestHTTPException)
 def handle_postgrest_httpexception(e: PostgrestHTTPException) -> Response:
+    """Catches PostgrestHTTPException when it is raised and
+    creates a JSON response to send to the client.
+
+    Args:
+        e (PostgrestHTTPException): PostgREST HTTP Exception Class.
+
+    Returns:
+        Response: Flask response.
+    """
     error_resp = e.response
     status_code = error_resp.status_code
     content = json.dumps(e.error_body)
