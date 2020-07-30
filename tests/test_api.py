@@ -18,7 +18,7 @@ def test_basic_successful_products_call(api_endpoint: str):
     assert data_len == 10
     assert resp.status_code == 200
     assert headers["Content-Range"] == "0-9/*"
-    assert headers["Link"] == '<http://localhost:5000/products?int_id=gt.10&limit=10&order=int_id>; rel="next"'
+    assert headers["Link"] == f'<{api_endpoint}/products?int_id=gt.10&limit=10&order=int_id>; rel="next"'
     assert headers["Content-Type"] == "application/json; charset=utf-8"
 
 

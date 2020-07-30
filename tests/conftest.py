@@ -8,4 +8,4 @@ import pytest
 def api_endpoint():
     """Api endpoint that can be passed as a parameter to any test
     """
-    return "http://localhost:5000"
+    return "http://localhost:5000/api"
