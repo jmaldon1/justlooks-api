@@ -2,12 +2,22 @@
 """
 import json
 import requests
+from typing import Optional
 
+import toolz
 from flask import Response, abort
 from werkzeug.exceptions import HTTPException
 
 from app.api import api_bp, api_utils
 from app.logger import logger
+
+
+ERROR_BODY_TEMPLATE = {
+    "hint": None,
+    "code": None,
+    "description": None,
+    "message": None
+}
 
 
 class PostgrestHTTPException(Exception):
@@ -17,19 +27,16 @@ class PostgrestHTTPException(Exception):
     """
 
     def __init__(self, response: requests.Response, hint: str = None,
-                 details: str = None, message: str = None):
+                 description: str = None, message: str = None):
         Exception.__init__(self)
-        logger.error(f"[PostgREST] Error {response.status_code} - {response.url}")
+        logger.error(
+            f"[PostgREST] Error {response.status_code} - {response.url}")
         self.response = response
         self.hint = hint
-        self.details = details
+        self.description = description
         self.message = message
         self.error_body_template = {
-            "hint": None,
-            "code": response.status_code,
-            "details": None,
-            "message": None
-        }
+            **ERROR_BODY_TEMPLATE, "code": response.status_code}
         self.error_body = self.create_error_body(self.response,
                                                  self.error_body_template)
 
@@ -37,12 +44,12 @@ class PostgrestHTTPException(Exception):
         return f"PostgREST {self.response.status_code} Error"
 
     @staticmethod
-    def create_custom_error(hint: str, details: str, message: str) -> dict:
-        """Create a dict of custom error body details.
+    def create_custom_error(hint: str, description: str, message: str) -> dict:
+        """Create a dict of custom error body description.
 
         Args:
             hint (str): Hint about why the error happened.
-            details (str): Details about the error message.
+            description (str): Description about the error message.
             message (str): Error message.
 
         Returns:
@@ -50,7 +57,7 @@ class PostgrestHTTPException(Exception):
         """
         intermediate = {
             "hint": hint,
-            "details": details,
+            "description": description,
             "message": message,
         }
         return {key: val for key, val in intermediate.items() if val is not None}
@@ -79,7 +86,7 @@ class PostgrestHTTPException(Exception):
             abort(status_code)
 
         custom_error_body = self.create_custom_error(self.hint,
-                                                     self.details,
+                                                     self.description,
                                                      self.message)
 
         error_body = {
@@ -91,36 +98,59 @@ class PostgrestHTTPException(Exception):
 
 
 @api_bp.errorhandler(PostgrestHTTPException)
-def handle_postgrest_httpexception(e: PostgrestHTTPException) -> Response:
+def handle_postgrest_httpexception(err: PostgrestHTTPException) -> Response:
     """Catches PostgrestHTTPException when it is raised and
     creates a JSON response to send to the client.
 
     Args:
-        e (PostgrestHTTPException): PostgREST HTTP Exception Class.
+        err (PostgrestHTTPException): PostgREST HTTP Exception Class.
 
     Returns:
         Response: Flask response.
     """
-    error_resp = e.response
+    error_resp = err.response
     status_code = error_resp.status_code
-    content = json.dumps(e.error_body)
+    content = json.dumps(err.error_body)
     headers = api_utils.create_headers(error_resp, {}, status_code)
 
     return Response(content, status_code, headers)
 
 
 @api_bp.errorhandler(HTTPException)
-def handle_exception(e: HTTPException):
+def handle_exception(err: HTTPException) -> Response:
     """Return JSON instead of HTML for HTTP errors."""
     # start with the correct headers and status code from the error
-    response = e.get_response()
+    response = err.get_response()
+
+    validation_messages = err.data.get("messages", None)
+
+    err_body = create_error_body(err, ERROR_BODY_TEMPLATE, validation_messages)
     # replace the body with JSON
-    response.data = json.dumps({
-        "hint": None,
-        "details": e.description,
-        "code": e.code,
-        "message": e.name
-    })
+    response.data = json.dumps(err_body)
 
     response.content_type = "application/json"
     return response
+
+
+def create_error_body(err: HTTPException, error_body_template: dict,
+                      validation_messages: Optional[list] = None) -> dict:
+    """Create an error body that depends on validation errors
+
+    Args:
+        err (HTTPException): HTTP Error.
+        validation_messages (Optional[list], optional): Validation Errors. Defaults to None.
+
+    Returns:
+        dict: Error body.
+    """
+    if validation_messages:
+        modified_error_body_template = toolz.dissoc(
+            error_body_template, "description")
+        return {
+            **modified_error_body_template,
+            "code": err.code,
+            "message": "Validation Errors",
+            "errors": validation_messages
+        }
+
+    return {**error_body_template, "description": err.description}
