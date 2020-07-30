@@ -1,3 +1,5 @@
+secrets/bucket_policy.json
+
 # Ignore all logs
 log/*
 
