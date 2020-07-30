@@ -109,9 +109,11 @@ def create_headers(resp: requests.Response, request_params: dict, status_code: i
                                      request_params,
                                      content_range_header)
 
+    # https://blog.container-solutions.com/a-guide-to-solving-those-mystifying-cors-issues
     return {
         **headers,
-        **link_header
+        **link_header,
+        "Access-Control-Expose-Headers": "*"
     }
 
 
