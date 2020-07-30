@@ -11,7 +11,7 @@ from app.api import api_bp
 # https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 
 def main():
-    """Entry point of project
+    """Entry point of app
     Creation of flask app
     How to run:
         python main.py
