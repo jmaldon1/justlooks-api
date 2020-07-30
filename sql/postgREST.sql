@@ -9,31 +9,51 @@ create role authenticator noinherit login password 'r4Q*^LgBXd';
 grant app_user to authenticator;
 
 
--- Products materialized view (view is stored on disk)
--- We need to refresh this view to update the data
-CREATE MATERIALIZED VIEW api.products AS
+-- products view for api
+-- https://stackoverflow.com/a/15261367
+CREATE VIEW api.products AS
 SELECT
     p.*,
     i.images,
     v.variants
 FROM data.products p
-JOIN(
+INNER JOIN(
     SELECT
         product_id,
-        json_agg(product_images.*) AS images
+        array_agg(product_images.*) AS images
     FROM data.product_images
     GROUP BY product_id
-) i ON i.product_id = p.product_id
-JOIN(
+) i USING (product_id)
+INNER JOIN(
     SELECT
         product_id,
-        json_agg(product_variants.*) AS variants
+        array_agg(product_variants.*) AS variants
     FROM data.product_variants
     GROUP BY product_id
-) v ON v.product_id = p.product_id;
+) v USING (product_id);
 
--- Update materialized view
-REFRESH MATERIALIZED VIEW api.products;
+
+-- outfits view for api
+CREATE VIEW api.outfits AS
+SELECT
+    *
+FROM data.outfits
+INNER JOIN (
+    SELECT
+        outfit_id,
+        array_agg(t1.*) as images
+    FROM data.outfit_images t1
+    GROUP BY outfit_id
+) t3 USING (outfit_id)
+INNER JOIN (
+    SELECT
+        t1.outfit_id,
+        json_agg(t2.*) as products
+    FROM data.outfit_products t1
+    INNER JOIN api.products t2 USING (product_id)
+    GROUP BY outfit_id
+) t2 USING (outfit_id)
+
 
 -- Get pivot value for seek pagination
 CREATE OR REPLACE FUNCTION api.pivot_value(int_id int, col text)
@@ -51,16 +71,26 @@ BEGIN
 END;
 $body$ LANGUAGE plpgsql STABLE;
 
-SELECT pivot_value(10, 'base_color')
+SELECT pivot_value(10, 'base_color');
 
--- Drop or truncate all tables in correct order
-drop table  api.products,
-            api.product_images,
-            api.product_variants,
-            api.entity,
-            api.outfits,
-            api.outfit_images,
-            api.outfit_products,
-            api.liked_entity,
-            api.users,
-            api.trained_recommendation_models
+-- Drop or truncate all tables and views in correct order
+drop if exists view api.products,
+                    api.outfits;
+drop table if exists data.products,
+                     data.product_images,
+                     data.product_variants,
+                     data.entity,
+                     data.outfits,
+                     data.outfit_images,
+                     data.outfit_products,
+                     data.liked_entity,
+                     data.users,
+                     data.trained_recommendation_models;
+
+-- Indexes
+-- Index naming conventions: https://gist.github.com/popravich/d6816ef1653329fb1745
+CREATE INDEX product_images_product_id_idx
+ON data.product_images (product_id);
+
+CREATE INDEX product_variants_product_id_idx
+ON data.product_variants (product_id);
