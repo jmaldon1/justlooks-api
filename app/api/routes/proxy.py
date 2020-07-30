@@ -12,7 +12,7 @@ from app.api.error_handlers import PostgrestHTTPException
 from app import utils
 
 
-@api_bp.route('/<path:path>', methods=['GET'])
+@api_bp.route('/api/<path:path>', methods=['GET'])
 def get_postgrest_proxy(path: str) -> Response:
     """Proxy for PostgREST that modifies various parts of the request,
     such as request params and headers.
