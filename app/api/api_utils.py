@@ -1,6 +1,7 @@
 """Utility functions that are used in API requests
 """
 from urllib.parse import urlencode, urlunparse, urlparse, urljoin
+from typing import Union
 import re
 import toolz
 import requests
@@ -21,21 +22,43 @@ def add_default_sorting(request_params: dict, default_sort: str = "int_id") -> d
     Returns:
         dict: Requests params with sort applied.
     """
-    sort = request_params.get("order", None)
-    if sort:
-        sort_columns = sort.split(",")
-        # Check if the `default_sort` is being sorted on already
-        if not any(default_sort in col for col in sort_columns):
-            # If there is a sort but no default sort, add the default sort
+    sort_params = request_params.get("order", None)
+    if sort_params:
+        sort_columns = get_sort_columns(sort_params)
+        # Check if the `default_sort` is being sorted on already.
+        if not default_sort in sort_columns:
+            # If there is a sort but no default sort, add the default sort.
             modified_sort_columns = sort_columns + [default_sort]
-            modified_sort = ",".join(modified_sort_columns)
-            return {**request_params, "order": modified_sort}
+            modified_sort_param = ",".join(modified_sort_columns)
+            return {**request_params, "order": modified_sort_param}
 
-        # If `default_sort` is already in the sort, leave it
+        # If `default_sort` is already in the sort, do nothing.
         return request_params
 
-    # If there is no sort, add the default sort
+    # If there is no sort, add the `default_sort`.
     return {**request_params, "order": default_sort}
+
+
+def get_sort_columns(sort_params: Union[list, str]) -> list:
+    """There are 2 ways to input query params:
+    example.com?order=int_id&order=base_color
+    or
+    example.com?order=int_id,base_color
+
+    This function will make sure we reach a common list for either situation.
+
+    Args:
+        sort_params (Union[list, str]): Sort query param.
+
+    Returns:
+        list: Sort columns as a list.
+    """
+    try:
+        return sort_params.split(",")
+    except AttributeError:
+        # Its already a list
+        pass
+    return sort_params
 
 
 def create_pivot_value_request_param(request_params: dict, postgrest_host: str) -> dict:
@@ -84,7 +107,7 @@ def create_pivot_value_request_param(request_params: dict, postgrest_host: str) 
 
 
 def create_headers(resp: requests.Response, request_params: dict, status_code: int) -> dict:
-    """Create various customer headers that need to be added to a PostgREST response.
+    """Create various custom headers that need to be added to a PostgREST response.
 
     Args:
         resp (requests.Response): PostgREST response.
@@ -109,11 +132,9 @@ def create_headers(resp: requests.Response, request_params: dict, status_code: i
                                      request_params,
                                      content_range_header)
 
-    # https://blog.container-solutions.com/a-guide-to-solving-those-mystifying-cors-issues
     return {
         **headers,
         **link_header,
-        "Access-Control-Expose-Headers": "*"
     }
 
 

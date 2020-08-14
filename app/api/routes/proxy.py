@@ -5,10 +5,10 @@ from urllib.parse import urljoin
 import requests
 import toolz
 
-from flask import current_app, request, Response
+from flask import current_app, request, Response, after_this_request, make_response
 
 from app.api import api_bp, api_utils
-from app.api.error_handlers import PostgrestHTTPException
+from app.api.error_handlers import ServerError, PostgrestHTTPException
 from app import utils
 
 
@@ -23,6 +23,15 @@ def get_postgrest_proxy(path: str) -> Response:
     Returns:
         Response: Flask response that mimicks the PostgREST response.
     """
+    @after_this_request
+    def add_cors_link_header(response: Response) -> Response:
+        extended_headers = {
+            "Access-Control-Expose-Headers": "Link",
+        }
+        # https://flask.palletsprojects.com/en/1.1.x/api/#flask.Flask.make_response
+        # Any headers placed above will be extended onto the current headers.
+        return make_response(response, extended_headers)
+
     config = current_app.config['CONFIG']
     postgrest_host = config['postgrest_host']
 
@@ -37,16 +46,19 @@ def get_postgrest_proxy(path: str) -> Response:
                                         postgrest_host=postgrest_host))
 
     # Send PostgREST the same request we received but with modified query params
-    postgrest_resp = requests.request(
-        method=request.method,
-        url=postgrest_url,
-        headers={key: value for (key, value)
-                 in request.headers if key != 'Host'},
-        data=request.get_data(),
-        cookies=request.cookies,
-        allow_redirects=False,
-        params=request_params
-    )
+    try:
+        postgrest_resp = requests.request(
+            method=request.method,
+            url=postgrest_url,
+            headers={key: value for (key, value)
+                     in request.headers if key != 'Host'},
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            params=request_params
+        )
+    except requests.exceptions.ConnectionError:
+        raise ServerError(503, hint="Could not connect to Postgrest.")
 
     postgrest_status_code = postgrest_resp.status_code
 

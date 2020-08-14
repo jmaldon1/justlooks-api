@@ -1,5 +1,6 @@
+"""signed url route
+"""
 import boto3
-from flask import request
 from webargs.flaskparser import use_kwargs
 from webargs import fields
 
@@ -24,6 +25,15 @@ file_args = {
 @api_bp.route('/create_signed_s3_url', methods=['GET'])
 @use_kwargs(file_args, location="querystring")  # Injects keyword arguments
 def create_signed_s3_url(file_name: str, mime_type: str):
+    """Create pre-signed s3 url to allow the client to post images directly to s3.
+    The S3 bucket should be publicly available but we should not automatically make
+    all objects public.
+    Public objects should be specified when they are POSTed into the bucket.
+
+    Args:
+        file_name (str): Name of file.
+        mime_type (str): Mime type of file.
+    """
     s3_bucket = "justlooks-images"
     # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#shared-credentials-file
     session = boto3.Session(profile_name="direct-upload-s3")
@@ -36,16 +46,15 @@ def create_signed_s3_url(file_name: str, mime_type: str):
             "acl": "public-read",
             "Content-Type": mime_type
         },
+        # These are the conditions that the client using this URL must meet.
+        # https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-HTTPPOSTConstructPolicy.html
         Conditions=[
             {"acl": "public-read"},
             {"Content-Type": mime_type}
         ],
         ExpiresIn=3600
     )
-    # print(presigned_post)
-    # WEBSITE PERMISSION
-    # https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteAccessPermissionsReqd.htmls
-    # GOOD EXAMPLE OF PERMISSION
+    # GOOD EXAMPLE OF AWS PERMISSIONS
     # https://docs.aws.amazon.com/AmazonS3/latest/dev/example-walkthroughs-managing-access-example1.html
     # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html#generating-a-presigned-url-to-upload-a-file
     return presigned_post

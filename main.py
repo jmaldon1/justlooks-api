@@ -7,6 +7,13 @@ from app.logger import set_logger_file, logger
 from app import constants
 from app.api import api_bp
 
+try:
+    config_file = import_module(os.environ['JOB_CONFIG'])
+    # Treat this like an import
+    config = config_file.config
+except KeyError as e:
+    raise KeyError(f"Can't find environment variable {e}.")
+
 
 # https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 
@@ -16,18 +23,6 @@ def main():
     How to run:
         python main.py
     """
-    try:
-        config_file = import_module(os.environ['JOB_CONFIG'])
-        secrets_file = import_module(os.environ['ENV_SECRETS'])
-    except KeyError as e:
-        raise KeyError(f"Can't find environment variable {e}.")
-
-    config = config_file.config
-    secrets = secrets_file.secrets
-
-    host = config['host']
-    port = config['port']
-    debug = config['debug']
 
     set_logger_file(a_lg=logger, log_file_dir=config['module_name'])
     # Sets both File and Console level
@@ -42,8 +37,14 @@ def main():
     app.register_blueprint(api_bp)
 
     app.secret_key = 'justlooks'
-    app.run(debug=debug, host=host, port=port)
+    # app.run(debug=debug, host=host, port=port)
+    return app
 
 
 if __name__ == "__main__":
-    main()
+    flask_app = main()
+
+    host = config['host']
+    port = config['port']
+    debug = config['debug']
+    flask_app.run(debug=debug, host=host, port=port)

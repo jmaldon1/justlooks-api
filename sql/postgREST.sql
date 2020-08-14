@@ -5,7 +5,7 @@ grant usage on schema api to app_user;
 -- grant select on api.todos to app_user;
 grant select on all tables in schema api to app_user;
 
-create role authenticator noinherit login password 'r4Q*^LgBXd';
+create role authenticator noinherit login password '*******';
 grant app_user to authenticator;
 
 
@@ -37,22 +37,22 @@ INNER JOIN(
 CREATE VIEW api.outfits AS
 SELECT
     *
-FROM data.outfits
+FROM data.outfits t1
 INNER JOIN (
     SELECT
         outfit_id,
         array_agg(t1.*) as images
     FROM data.outfit_images t1
     GROUP BY outfit_id
-) t3 USING (outfit_id)
+) t2 USING (outfit_id)
 INNER JOIN (
     SELECT
         t1.outfit_id,
-        json_agg(t2.*) as products
+        array_agg(t2.*) as products
     FROM data.outfit_products t1
     INNER JOIN api.products t2 USING (product_id)
     GROUP BY outfit_id
-) t2 USING (outfit_id)
+) t3 USING (outfit_id);
 
 
 -- Get pivot value for seek pagination
