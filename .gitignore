@@ -139,3 +139,4 @@ dmypy.json
 /.blackbox/pubring.kbx~
 /.blackbox/secring.gpg
 /secrets/bucket_policy.json
+/secrets/dev_secrets.py
