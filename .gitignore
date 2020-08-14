@@ -1,4 +1,7 @@
-secrets/bucket_policy.json
+app2/
+
+# Secrets
+# secrets/bucket_policy.json
 
 # Ignore all logs
 log/*
@@ -132,3 +135,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/.blackbox/pubring.gpg~
+/.blackbox/pubring.kbx~
+/.blackbox/secring.gpg
