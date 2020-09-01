@@ -1,3 +1,5 @@
+"""Development configuration file.
+"""
 DESCRIPTION = "Justlooks api"
 ENVIRONMENT = "dev"
 

@@ -55,6 +55,12 @@ INNER JOIN (
 ) t3 USING (outfit_id);
 
 
+-- outfit thumbnail images
+CREATE VIEW api.outfit_thumbnails AS
+SELECT * FROM data.outfit_images
+WHERE position = 1;
+
+
 -- Get pivot value for seek pagination
 CREATE OR REPLACE FUNCTION api.pivot_value(int_id int, col text)
   RETURNS text AS $body$
@@ -74,8 +80,9 @@ $body$ LANGUAGE plpgsql STABLE;
 SELECT pivot_value(10, 'base_color');
 
 -- Drop or truncate all tables and views in correct order
-drop if exists view api.products,
-                    api.outfits;
+drop view if exists api.products,
+                    api.outfits,
+                    api.outfit_thumbnails;
 drop table if exists data.products,
                      data.product_images,
                      data.product_variants,

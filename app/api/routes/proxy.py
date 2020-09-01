@@ -1,13 +1,15 @@
 """PostgREST proxy
 """
+import traceback
 from functools import partial
 from urllib.parse import urljoin
+
 import requests
 import toolz
-
 from flask import current_app, request, Response, after_this_request, make_response
 
 from app.api import api_bp, api_utils
+from app.logger import logger
 from app.api.error_handlers import ServerError, PostgrestHTTPException
 from app import utils
 
@@ -24,13 +26,22 @@ def get_postgrest_proxy(path: str) -> Response:
         Response: Flask response that mimicks the PostgREST response.
     """
     @after_this_request
-    def add_cors_link_header(response: Response) -> Response:
-        extended_headers = {
-            "Access-Control-Expose-Headers": "Link",
-        }
-        # https://flask.palletsprojects.com/en/1.1.x/api/#flask.Flask.make_response
-        # Any headers placed above will be extended onto the current headers.
-        return make_response(response, extended_headers)
+    def __add_cors_link_header(response: Response) -> Response:
+        """Adds CORS Link header to the response if it does not already exist.
+        This function is run after the outside function is returned.
+        https://werkzeug.palletsprojects.com/en/1.0.x/datastructures/#werkzeug.datastructures.Headers
+
+        Args:
+            response (Response): Flask response.
+
+        Returns:
+            Response: Flask response with CORS Link headers.
+        """
+        modified_response = make_response(response)
+        aceh_vals = modified_response.headers.getlist("Access-Control-Expose-Headers")
+        if "Link" not in aceh_vals and len(aceh_vals) > 0:
+            modified_response.headers.extend({"Access-Control-Expose-Headers": "Link"})
+        return modified_response
 
     config = current_app.config['CONFIG']
     postgrest_host = config['postgrest_host']
@@ -58,6 +69,7 @@ def get_postgrest_proxy(path: str) -> Response:
             params=request_params
         )
     except requests.exceptions.ConnectionError:
+        logger.error(traceback.format_exc())
         raise ServerError(503, hint="Could not connect to Postgrest.")
 
     postgrest_status_code = postgrest_resp.status_code
