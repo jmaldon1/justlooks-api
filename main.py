@@ -1,6 +1,6 @@
 import os
-
 from importlib import import_module
+
 from flask import Flask
 
 from app.logger import set_logger_file, logger
@@ -19,12 +19,12 @@ except KeyError as e:
 
 def main():
     """Entry point of app
-    Creation of flask app
+    Creation of flask app and logger.
     How to run:
         python main.py
     """
 
-    set_logger_file(a_lg=logger, log_file_dir=config['module_name'])
+    set_logger_file(a_lg=logger, log_file_dir=config['environment'])
     # Sets both File and Console level
     logger.setLevel(config['default_log_level'])
     logger.info(f"Imported from module: {os.environ['JOB_CONFIG']}")
