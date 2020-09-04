@@ -1,4 +1,6 @@
 astroid==2.4.2
+attrs==20.1.0
+autopep8==1.5.4
 boto3==1.13.9
 botocore==1.16.9
 certifi==2020.4.5.1
@@ -7,6 +9,7 @@ click==7.1.2
 docutils==0.15.2
 Flask==1.1.2
 idna==2.9
+iniconfig==1.0.1
 isort==5.4.2
 itsdangerous==1.1.0
 Jinja2==2.11.2
@@ -17,10 +20,17 @@ lightfm==1.15
 MarkupSafe==1.1.1
 marshmallow==3.7.1
 mccabe==0.6.1
+more-itertools==8.5.0
 numpy==1.18.4
+packaging==20.4
 Pillow==7.1.2
+pluggy==0.13.1
 psycopg2-binary==2.8.5
+py==1.9.0
+pycodestyle==2.6.0
 pylint==2.6.0
+pyparsing==2.4.7
+pytest==6.0.1
 python-dateutil==2.8.1
 requests==2.23.0
 s3transfer==0.3.3
