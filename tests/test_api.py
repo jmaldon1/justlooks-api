@@ -1,11 +1,21 @@
 """
 API Testing
+
+HOW TO RUN:
+
+run: `python -m pytest tests -s -vv`
+
+--OR--
+
+Install this project as a package: `pip install -e .`
+then run: `pytest tests -s -vv`
 """
 from urllib.parse import urljoin
 
 import requests
 import pytest
 
+from app import utils
 # https://realpython.com/pytest-python-testing/
 
 
@@ -19,10 +29,19 @@ def test_basic_successful_products_call(api_endpoint: str):
     data_len = len(resp.json())
     headers = resp.headers
 
+    products_api_endpoint = urljoin(api_endpoint, "products")
+    expected_params = {
+        "int_id": "gt.10",
+        "limit": 10,
+        "order": "int_id"
+    }
+
+    expected_next_link = utils.add_query_params_to_url(products_api_endpoint, expected_params)
+
     assert data_len == 10
     assert resp.status_code == 200
     assert headers["Content-Range"] == "0-9/*"
-    assert headers["Link"] == f'<{api_endpoint}/products?int_id=gt.10&limit=10&order=int_id>; rel="next"'
+    assert headers["Link"] == f'<{expected_next_link}>; rel="next"'
     assert headers["Content-Type"] == "application/json; charset=utf-8"
 
 
@@ -40,7 +59,7 @@ def test_basic_successful_products_call(api_endpoint: str):
         "limit": 129,
     }, 129)
 ])
-def test_various_limits_with_various_int_ids(api_endpoint: str, query_params: dict, expected: int):
+def test_limits_with_various_int_ids(api_endpoint: str, query_params: dict, expected: int):
     url = urljoin(api_endpoint, "products")
     resp = requests.get(url, params=query_params)
     data_len = len(resp.json())
