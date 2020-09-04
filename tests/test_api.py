@@ -1,6 +1,10 @@
-import pytest
-import requests
+"""
+API Testing
+"""
 from urllib.parse import urljoin
+
+import requests
+import pytest
 
 # https://realpython.com/pytest-python-testing/
 
