@@ -201,13 +201,10 @@ def create_next_link_header(last_id: int, request_params: dict) -> str:
     """
     next_page_params = {**request_params, "int_id": f"gt.{last_id}"}
 
-    request_url = request.url
-    next_page_params_encoded = urlencode(next_page_params)
-
-    next_request_url = toolz.pipe(request_url,
+    next_request_url = toolz.pipe(request.url,
                                   urlparse,
                                   lambda req_url: req_url._replace(
-                                      query=next_page_params_encoded),
+                                      query=urlencode(next_page_params)),
                                   urlunparse)
 
     return f'<{next_request_url}>; rel="next"'
