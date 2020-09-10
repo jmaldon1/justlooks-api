@@ -68,12 +68,13 @@ def get_postgrest_proxy(path: str) -> Response:
             allow_redirects=False,
             params=request_params
         )
-    except requests.exceptions.ConnectionError:
+    except requests.exceptions.ConnectionError as err:
         logger.error(traceback.format_exc())
-        raise ServerError(503, hint="Could not connect to Postgrest.")
+        raise ServerError(503, hint="Could not connect to Postgrest.") from err
 
     postgrest_status_code = postgrest_resp.status_code
 
+    print(postgrest_resp.headers)
     # Abort if we get an error code.
     if postgrest_status_code >= 300:
         raise PostgrestHTTPException(postgrest_resp)
