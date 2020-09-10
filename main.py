@@ -11,8 +11,8 @@ try:
     config_file = import_module(os.environ['JOB_CONFIG'])
     # Treat this like an import
     config = config_file.config
-except KeyError as e:
-    raise KeyError(f"Can't find environment variable {e}.")
+except KeyError as err:
+    raise KeyError(f"Can't find environment variable {err}.") from err
 
 
 # https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
