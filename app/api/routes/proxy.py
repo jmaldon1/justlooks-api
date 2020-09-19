@@ -54,7 +54,11 @@ def get_postgrest_proxy(path: str) -> Response:
     postgrest_host = config['postgrest_host']
     postgrest_url = urljoin(postgrest_host, path)
 
-    modified_query_params = modify_query_params(request.args, postgrest_host)
+    routes_to_modify_query_params = ["products", "outfits", "outfit_thumbnails"]
+    if path in routes_to_modify_query_params:
+        query_params = modify_query_params(request.args, postgrest_host)
+    else:
+        query_params = request.args
 
     # Send PostgREST the same request we received but with modified query params
     try:
@@ -66,7 +70,7 @@ def get_postgrest_proxy(path: str) -> Response:
             data=request.get_data(),
             cookies=request.cookies,
             allow_redirects=False,
-            params=modified_query_params
+            params=query_params
         )
     except requests.exceptions.ConnectionError as err:
         logger.error(traceback.format_exc())
@@ -79,7 +83,7 @@ def get_postgrest_proxy(path: str) -> Response:
 
     # Create new headers
     headers = api_utils.create_headers(postgrest_resp,
-                                       modified_query_params,
+                                       query_params,
                                        postgrest_status_code)
 
     # Create response to send back to client
