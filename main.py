@@ -1,3 +1,5 @@
+"""Entry point of flask app
+"""
 import os
 from importlib import import_module
 
