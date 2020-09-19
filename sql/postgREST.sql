@@ -60,6 +60,15 @@ CREATE VIEW api.outfit_thumbnails AS
 SELECT * FROM data.outfit_images
 WHERE position = 1;
 
+-- distinct seasons
+CREATE VIEW api.distinct_seasons AS
+SELECT season, count(season) FROM data.outfits
+GROUP BY season;
+
+-- distinct stylists
+CREATE VIEW api.distinct_stylists AS
+SELECT stylist, count(stylist) FROM data.outfits
+GROUP BY stylist;
 
 -- Get pivot value for seek pagination
 CREATE OR REPLACE FUNCTION api.pivot_value(int_id int, col text)
