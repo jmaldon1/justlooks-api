@@ -14,7 +14,7 @@ isort==5.4.2
 itsdangerous==1.1.0
 Jinja2==2.11.2
 jmespath==0.10.0
-joblib==0.15.1
+joblib==1.2.0
 lazy-object-proxy==1.4.3
 lightfm==1.15
 MarkupSafe==1.1.1
